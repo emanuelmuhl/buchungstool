@@ -9,9 +9,13 @@ import {
   CreditCard,
   Upload,
   Trash2,
-  Image
+  Image,
+  Users,
+  Settings as SettingsIcon
 } from 'lucide-react'
 import { settingsApi } from '../api'
+import { usePermissions } from '../hooks/usePermissions'
+import UserManagement from '../components/UserManagement'
 
 interface Settings {
   companyName: string
@@ -27,7 +31,9 @@ interface Settings {
 }
 
 export default function Settings() {
+  const [activeTab, setActiveTab] = useState('general')
   const [showForm, setShowForm] = useState(false)
+  const { canAccessSettings, canManageUsers } = usePermissions()
   
   const queryClient = useQueryClient()
 
@@ -91,22 +97,73 @@ export default function Settings() {
     )
   }
 
+  if (!canAccessSettings()) {
+    return (
+      <div className="text-center py-8">
+        <SettingsIcon className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Keine Berechtigung</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Sie haben keine Berechtigung für die Einstellungen.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Einstellungen</h1>
-          <p className="text-gray-600">App-Konfiguration und Unternehmensdaten</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="btn btn-primary flex items-center"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Bearbeiten
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Einstellungen</h1>
+        <p className="text-gray-600">App-Konfiguration und Benutzerverwaltung</p>
       </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('general')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'general'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <SettingsIcon className="h-4 w-4 mr-2 inline" />
+            Allgemeine Einstellungen
+          </button>
+          {canManageUsers() && (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'users'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users className="h-4 w-4 mr-2 inline" />
+              Benutzerverwaltung
+            </button>
+          )}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'general' && (
+        <div className="space-y-6">
+          {/* Header für General Settings */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Unternehmensdaten</h2>
+              <p className="text-sm text-gray-600">Konfiguration der App und Unternehmensinformationen</p>
+            </div>
+            <button
+              onClick={() => setShowForm(true)}
+              className="btn btn-primary flex items-center"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Bearbeiten
+            </button>
+          </div>
 
       {/* Current Settings Display */}
       {!showForm && (
@@ -381,6 +438,11 @@ export default function Settings() {
           </form>
         </div>
       )}
+        </div>
+      )}
+
+      {/* User Management Tab */}
+      {activeTab === 'users' && <UserManagement />}
     </div>
   )
 } 

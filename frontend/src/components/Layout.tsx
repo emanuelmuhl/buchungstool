@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useQuery } from 'react-query'
 import { settingsApi } from '../api'
+import { usePermissions } from '../hooks/usePermissions'
 import { 
   Home, 
   Users, 
@@ -20,16 +21,17 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Gäste', href: '/guests', icon: Users },
   { name: 'Buchungen', href: '/bookings', icon: Calendar },
-  { name: 'Leistungen', href: '/services', icon: Package },
+  { name: 'Leistungen', href: '/services', icon: Package, adminOnly: true },
   { name: 'Reports', href: '/reports', icon: FileText },
-  { name: 'Einstellungen', href: '/settings', icon: Settings },
-  { name: 'API Test', href: '/test', icon: Package },
+  { name: 'Einstellungen', href: '/settings', icon: Settings, adminOnly: true },
+  { name: 'API Test', href: '/test', icon: Package, adminOnly: true },
 ]
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
   const { logout } = useAuth()
+  const { canAccessSettings } = usePermissions()
   
   const { data: companyInfo } = useQuery('companyInfo', settingsApi.getCompanyInfo)
 
@@ -58,7 +60,7 @@ export default function Layout() {
             </button>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
+            {navigation.filter(item => !item.adminOnly || canAccessSettings()).map((item) => {
               const isActive = location.pathname === item.href
               return (
                 <Link
@@ -105,7 +107,7 @@ export default function Layout() {
             </div>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
+            {navigation.filter(item => !item.adminOnly || canAccessSettings()).map((item) => {
               const isActive = location.pathname === item.href
               return (
                 <Link

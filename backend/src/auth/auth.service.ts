@@ -1,27 +1,16 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private usersService: UsersService,
+  ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-
-    if (username === adminUsername) {
-      // Für Entwicklung: Direkter Vergleich
-      // In Produktion sollte das Passwort gehashed sein
-      if (password === adminPassword) {
-        return {
-          id: 1,
-          username: adminUsername,
-          role: 'admin',
-        };
-      }
-    }
-    return null;
+    return this.usersService.validateUser(username, password);
   }
 
   async login(user: any) {
@@ -37,6 +26,9 @@ export class AuthService {
         id: user.id,
         username: user.username,
         role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
       },
     };
   }
