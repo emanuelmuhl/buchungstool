@@ -6,8 +6,8 @@ WORKDIR /app
 # Kopiere package.json und package-lock.json
 COPY frontend/package*.json ./
 
-# Installiere Dependencies
-RUN npm install --omit=dev
+# Installiere Dependencies (alle für Build)
+RUN npm install
 
 # Kopiere Source Code
 COPY frontend/ ./
