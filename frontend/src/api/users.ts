@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { User, CreateUserDto, UpdateUserDto } from '../types/user';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3101';
+import { getApiUrl } from '../utils/api';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiUrl(),
 });
 
 // Request interceptor für JWT Token

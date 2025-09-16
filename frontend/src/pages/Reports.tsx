@@ -40,7 +40,7 @@ export default function Reports() {
 
       console.log('Downloading invoice for booking:', bookingId)
       
-      const response = await fetch(`/api/reports/invoice/${bookingId}`, {
+      const response = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3101' : `http://${window.location.hostname}:3101`}/reports/invoice/${bookingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

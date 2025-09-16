@@ -209,7 +209,7 @@ export default function Bookings() {
       if (!token) return
 
       // Verwende die Reports-Seite für den Download
-      const response = await fetch(`/api/reports/invoice/${bookingId}`, {
+      const response = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3101' : `http://${window.location.hostname}:3101`}/reports/invoice/${bookingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
