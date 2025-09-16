@@ -1019,8 +1019,11 @@ export class ReportsService {
     let browser;
     try {
       console.log('Launching Puppeteer browser...');
+      console.log('HTML length:', html.length);
+      
       browser = await puppeteer.launch({
         headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -1028,37 +1031,58 @@ export class ReportsService {
           '--disable-gpu',
           '--no-first-run',
           '--no-zygote',
-          '--single-process'
+          '--single-process',
+          '--disable-web-security',
+          '--disable-features=VizDisplayCompositor'
         ],
       });
 
-      console.log('Creating new page...');
+      console.log('Browser launched successfully');
       const page = await browser.newPage();
+      console.log('New page created');
+      
+      // Set viewport for consistent rendering
+      await page.setViewport({ width: 1200, height: 800 });
       
       console.log('Setting content...');
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { 
+        waitUntil: 'networkidle0',
+        timeout: 30000 
+      });
       
-      console.log('Generating PDF...');
+      console.log('Content set, generating PDF...');
       const pdf = await page.pdf({
         format: 'A4',
         margin: {
-          top: '20mm',
-          right: '20mm',
-          bottom: '20mm',
-          left: '20mm',
+          top: '15mm',
+          right: '15mm',
+          bottom: '15mm',
+          left: '15mm',
         },
         printBackground: true,
+        preferCSSPageSize: false,
       });
 
-      console.log('PDF generated, converting to Buffer...');
+      console.log('PDF generated successfully, size:', pdf.length, 'bytes');
+      
+      if (pdf.length < 1000) {
+        console.error('PDF too small, likely empty or corrupted');
+        throw new Error('PDF-Generierung fehlgeschlagen: PDF zu klein');
+      }
+      
       return Buffer.from(pdf);
     } catch (error) {
       console.error('Error in generatePDF:', error);
+      console.error('Error stack:', error.stack);
       throw new Error(`PDF-Generierung fehlgeschlagen: ${error.message}`);
     } finally {
       if (browser) {
         console.log('Closing browser...');
-        await browser.close();
+        try {
+          await browser.close();
+        } catch (closeError) {
+          console.error('Error closing browser:', closeError);
+        }
       }
     }
   }
