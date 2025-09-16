@@ -35,11 +35,16 @@ export default function UserManagement() {
   const [showPassword, setShowPassword] = useState(true);
 
   // Query für alle Benutzer
-  const { data: users = [], isLoading } = useQuery<User[]>(
+  const { data: users = [], isLoading, error } = useQuery<User[]>(
     'users',
     usersApi.getAll,
     {
       enabled: canManageUsers(),
+      retry: 3,
+      retryDelay: 1000,
+      onError: (error: any) => {
+        console.error('Fehler beim Laden der Benutzer:', error);
+      },
     }
   );
 
@@ -50,6 +55,10 @@ export default function UserManagement() {
       setShowForm(false);
       setFormData(initialFormData);
       setShowPassword(true);
+    },
+    onError: (error: any) => {
+      console.error('Fehler beim Erstellen des Benutzers:', error);
+      alert(`Fehler: ${error.response?.data?.message || 'Benutzer konnte nicht erstellt werden'}`);
     },
   });
 
@@ -145,7 +154,30 @@ export default function UserManagement() {
   }
 
   if (isLoading) {
-    return <div className="text-center py-4">Lade Benutzer...</div>;
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-2 text-sm text-gray-600">Lade Benutzer...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-600 mb-2">⚠️ Fehler beim Laden der Benutzer</div>
+        <p className="text-sm text-gray-600">
+          Möglicherweise sind die Benutzer-Tabellen noch nicht erstellt. 
+          Bitte warten Sie einen Moment und laden Sie die Seite neu.
+        </p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 btn btn-primary"
+        >
+          Seite neu laden
+        </button>
+      </div>
+    );
   }
 
   return (

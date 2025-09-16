@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -15,9 +15,13 @@ export class UsersService {
 
   async onModuleInit() {
     // Erstelle Standard-Admin wenn keine Benutzer existieren
-    const userCount = await this.usersRepository.count();
-    if (userCount === 0) {
-      await this.createDefaultAdmin();
+    try {
+      const userCount = await this.usersRepository.count();
+      if (userCount === 0) {
+        await this.createDefaultAdmin();
+      }
+    } catch (error) {
+      console.log('Users table not ready yet, will retry later...');
     }
   }
 

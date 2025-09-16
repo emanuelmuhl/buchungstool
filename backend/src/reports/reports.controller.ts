@@ -14,7 +14,7 @@ export class ReportsController {
       console.log('Invoice PDF request for booking:', bookingId);
       
       const pdfBuffer = await this.reportsService.generateInvoicePDF(bookingId);
-      console.log('Invoice PDF generated, size:', pdfBuffer.length);
+      console.log('Invoice PDF generated successfully, size:', pdfBuffer.length);
       
       res.set({
         'Content-Type': 'application/pdf',

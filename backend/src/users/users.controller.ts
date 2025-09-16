@@ -25,8 +25,16 @@ export class UsersController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    try {
+      console.log('Creating user with data:', { ...createUserDto, password: '[HIDDEN]' });
+      const result = await this.usersService.create(createUserDto);
+      console.log('User created successfully:', result.username);
+      return result;
+    } catch (error) {
+      console.error('Error creating user:', error.message);
+      throw error;
+    }
   }
 
   @Get()
