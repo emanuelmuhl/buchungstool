@@ -254,27 +254,28 @@ export class ReportsService {
             body { 
               font-family: Arial, sans-serif; 
               margin: 0; 
-              padding: 20mm;
+              padding: 15mm;
               color: #333;
-              line-height: 1.4;
+              line-height: 1.2;
+              font-size: 12px;
             }
             
             .header {
               text-align: center;
-              margin-bottom: 30px;
-              padding-bottom: 20px;
+              margin-bottom: 20px;
+              padding-bottom: 12px;
               border-bottom: 2px solid #28a745;
             }
             
             .header h1 {
-              margin: 0 0 10px 0;
-              font-size: 28px;
+              margin: 0 0 5px 0;
+              font-size: 22px;
               color: #2c3e50;
             }
             
             .header h2 {
-              margin: 0 0 15px 0;
-              font-size: 20px;
+              margin: 0 0 8px 0;
+              font-size: 16px;
               color: #28a745;
               font-weight: normal;
             }
@@ -282,91 +283,91 @@ export class ReportsService {
             .header p {
               margin: 0;
               color: #666;
-              font-size: 14px;
+              font-size: 11px;
             }
             
             .confirmation-badge {
               background: #d4edda;
               color: #155724;
-              padding: 15px;
+              padding: 10px;
               text-align: center;
-              margin-bottom: 25px;
-              border-radius: 5px;
+              margin-bottom: 15px;
+              border-radius: 3px;
               border: 1px solid #c3e6cb;
-              font-size: 16px;
+              font-size: 14px;
               font-weight: bold;
             }
             
             .booking-info {
               background: #f8f9fa;
-              padding: 20px;
-              margin-bottom: 25px;
-              border-radius: 5px;
+              padding: 12px;
+              margin-bottom: 15px;
+              border-radius: 3px;
               border-left: 4px solid #28a745;
             }
             
             .booking-info p {
-              margin: 5px 0;
-              font-size: 14px;
+              margin: 3px 0;
+              font-size: 12px;
             }
             
             .guest-info {
-              margin-bottom: 25px;
+              margin-bottom: 15px;
             }
             
             .guest-info h3 {
-              margin: 0 0 15px 0;
+              margin: 0 0 8px 0;
               color: #2c3e50;
-              font-size: 16px;
+              font-size: 14px;
               border-bottom: 1px solid #eee;
-              padding-bottom: 5px;
+              padding-bottom: 3px;
             }
             
             .guest-info p {
-              margin: 5px 0;
-              font-size: 14px;
+              margin: 2px 0;
+              font-size: 12px;
             }
             
             .welcome-section {
               background: #e3f2fd;
-              padding: 20px;
-              margin: 25px 0;
-              border-radius: 5px;
+              padding: 12px;
+              margin: 15px 0;
+              border-radius: 3px;
               border-left: 4px solid #2196f3;
             }
             
             .welcome-section h3 {
-              margin: 0 0 10px 0;
+              margin: 0 0 6px 0;
               color: #1976d2;
-              font-size: 16px;
+              font-size: 14px;
             }
             
             .welcome-section p {
               margin: 0;
-              font-size: 14px;
+              font-size: 12px;
               color: #333;
             }
             
             .services-table {
               width: 100%;
               border-collapse: collapse;
-              margin: 25px 0;
+              margin: 15px 0;
               border: 1px solid #ddd;
             }
             
             .services-table th {
               background: #f1f1f1;
-              padding: 12px 8px;
+              padding: 8px 6px;
               text-align: left;
               font-weight: bold;
-              font-size: 14px;
+              font-size: 12px;
               border-bottom: 2px solid #ddd;
             }
             
             .services-table td {
-              padding: 10px 8px;
+              padding: 6px;
               border-bottom: 1px solid #eee;
-              font-size: 14px;
+              font-size: 12px;
             }
             
             .services-table tr:nth-child(even) {
@@ -375,44 +376,44 @@ export class ReportsService {
             
             .total-section {
               text-align: right;
-              margin: 25px 0;
-              padding: 15px;
+              margin: 15px 0;
+              padding: 10px;
               background: #e8f5e9;
-              border-radius: 5px;
+              border-radius: 3px;
               border-left: 4px solid #28a745;
             }
             
             .total-section p {
               margin: 0;
-              font-size: 18px;
+              font-size: 16px;
               font-weight: bold;
               color: #2c3e50;
             }
             
             .footer {
-              margin-top: 40px;
-              padding-top: 20px;
+              margin-top: 20px;
+              padding-top: 12px;
               border-top: 1px solid #ddd;
-              font-size: 14px;
+              font-size: 11px;
               color: #666;
             }
             
             .footer .welcome-text {
               font-weight: bold;
-              margin-bottom: 15px;
+              margin-bottom: 8px;
               color: #2c3e50;
               text-align: center;
             }
             
             .checkin-info {
               background: #f8f9fa;
-              padding: 15px;
-              border-radius: 5px;
-              margin: 15px 0;
+              padding: 10px;
+              border-radius: 3px;
+              margin: 8px 0;
             }
             
             .checkin-info p {
-              margin: 5px 0;
+              margin: 3px 0;
             }
             
             strong { color: #2c3e50; }
@@ -557,27 +558,28 @@ export class ReportsService {
           body { 
             font-family: Arial, sans-serif; 
             margin: 0; 
-            padding: 20mm;
+            padding: 15mm;
             color: #333;
-            line-height: 1.4;
+            line-height: 1.2;
+            font-size: 12px;
           }
           
           .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #ddd;
           }
           
           .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 28px;
+            margin: 0 0 5px 0;
+            font-size: 22px;
             color: #2c3e50;
           }
           
           .header h2 {
-            margin: 0 0 15px 0;
-            font-size: 20px;
+            margin: 0 0 8px 0;
+            font-size: 16px;
             color: #666;
             font-weight: normal;
           }
@@ -585,58 +587,58 @@ export class ReportsService {
           .header p {
             margin: 0;
             color: #666;
-            font-size: 14px;
+            font-size: 11px;
           }
           
           .invoice-info {
             background: #f8f9fa;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 3px;
           }
           
           .invoice-info p {
-            margin: 5px 0;
-            font-size: 14px;
+            margin: 3px 0;
+            font-size: 12px;
           }
           
           .guest-info {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
           }
           
           .guest-info h3 {
-            margin: 0 0 15px 0;
+            margin: 0 0 8px 0;
             color: #2c3e50;
-            font-size: 16px;
+            font-size: 14px;
             border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
+            padding-bottom: 3px;
           }
           
           .guest-info p {
-            margin: 5px 0;
-            font-size: 14px;
+            margin: 2px 0;
+            font-size: 12px;
           }
           
           .services-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 25px 0;
+            margin: 15px 0;
             border: 1px solid #ddd;
           }
           
           .services-table th {
             background: #f1f1f1;
-            padding: 12px 8px;
+            padding: 8px 6px;
             text-align: left;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
             border-bottom: 2px solid #ddd;
           }
           
           .services-table td {
-            padding: 10px 8px;
+            padding: 6px;
             border-bottom: 1px solid #eee;
-            font-size: 14px;
+            font-size: 12px;
           }
           
           .services-table tr:nth-child(even) {
@@ -645,42 +647,42 @@ export class ReportsService {
           
           .total-section {
             text-align: right;
-            margin: 25px 0;
-            padding: 15px;
+            margin: 15px 0;
+            padding: 10px;
             background: #f1f1f1;
-            border-radius: 5px;
+            border-radius: 3px;
           }
           
           .total-section p {
             margin: 0;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #2c3e50;
           }
           
           .footer {
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 12px;
             border-top: 1px solid #ddd;
-            font-size: 14px;
+            font-size: 11px;
             color: #666;
           }
           
           .footer .thank-you {
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             color: #2c3e50;
           }
           
           .payment-info {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 8px 0;
           }
           
           .payment-info p {
-            margin: 5px 0;
+            margin: 3px 0;
           }
           
           strong { color: #2c3e50; }

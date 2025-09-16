@@ -64,7 +64,7 @@ export default function Login() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="input pl-10"
-                  placeholder="admin"
+                  placeholder="Benutzername"
                   required
                 />
               </div>
@@ -103,12 +103,6 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Standard-Anmeldedaten:</p>
-            <p className="font-mono text-xs mt-1">
-              Benutzername: admin | Passwort: admin123
-            </p>
-          </div>
         </div>
       </div>
     </div>
