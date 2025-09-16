@@ -1,0 +1,25 @@
+# Backend Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Kopiere package.json und package-lock.json
+COPY backend/package*.json ./
+
+# Installiere Dependencies
+RUN npm ci --only=production
+
+# Kopiere Source Code
+COPY backend/ ./
+
+# Build der Anwendung
+RUN npm run build
+
+# Erstelle uploads Verzeichnis
+RUN mkdir -p uploads
+
+# Expose Port 3101
+EXPOSE 3101
+
+# Starte die Anwendung
+CMD ["npm", "run", "start:prod"] 

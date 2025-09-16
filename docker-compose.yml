@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Datenbank
+  postgres:
+    image: postgres:15-alpine
+    container_name: rustico-postgres
+    environment:
+      POSTGRES_DB: rustico_buchungstool
+      POSTGRES_USER: rustico_user
+      POSTGRES_PASSWORD: rustico_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rustico_user -d rustico_buchungstool"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: rustico-backend
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: rustico_user
+      DB_PASSWORD: rustico_password
+      DB_DATABASE: rustico_buchungstool
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      PORT: 3101
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "3101:3101"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3101/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: rustico-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  default:
+    name: rustico-network 

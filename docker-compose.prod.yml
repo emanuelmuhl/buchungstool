@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Datenbank
+  postgres:
+    image: postgres:15-alpine
+    container_name: rustico-postgres-prod
+    environment:
+      POSTGRES_DB: rustico_buchungstool
+      POSTGRES_USER: ${DB_USERNAME:-rustico_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rustico_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    ports:
+      - "127.0.0.1:5432:5432"  # Nur localhost zugänglich
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-rustico_user} -d rustico_buchungstool"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: rustico-backend-prod
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-rustico_user}
+      DB_PASSWORD: ${DB_PASSWORD:-rustico_password}
+      DB_DATABASE: rustico_buchungstool
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      PORT: 3101
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "127.0.0.1:3101:3101"  # Nur localhost zugänglich
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3101/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+
+  # Frontend mit Nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: rustico-frontend-prod
+    ports:
+      - "80:80"
+      - "443:443"  # Für HTTPS
+    depends_on:
+      - backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+
+  # Nginx Reverse Proxy (optional für SSL)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: rustico-nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Für SSL-Zertifikate
+    depends_on:
+      - frontend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  default:
+    name: rustico-network-prod
+    driver: bridge 
