@@ -24,7 +24,6 @@ const navigation = [
   { name: 'Leistungen', href: '/services', icon: Package, adminOnly: true },
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Einstellungen', href: '/settings', icon: Settings, adminOnly: true },
-  { name: 'API Test', href: '/test', icon: Package, adminOnly: true },
 ]
 
 export default function Layout() {

@@ -6,6 +6,7 @@ import { Guest } from '../guests/entities/guest.entity';
 import { Service } from '../services/entities/service.entity';
 import { SettingsService } from '../settings/settings.service';
 import * as puppeteer from 'puppeteer';
+import * as htmlPdf from 'html-pdf-node';
 import * as ExcelJS from 'exceljs';
 import { format as formatDate } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -1016,42 +1017,14 @@ export class ReportsService {
   }
 
   private async generatePDF(html: string): Promise<Buffer> {
-    let browser;
+    console.log('Starting PDF generation...');
+    console.log('HTML length:', html.length);
+    
+    // Try html-pdf-node first (more reliable in Docker)
     try {
-      console.log('Launching Puppeteer browser...');
-      console.log('HTML length:', html.length);
+      console.log('Trying html-pdf-node...');
       
-      browser = await puppeteer.launch({
-        headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor'
-        ],
-      });
-
-      console.log('Browser launched successfully');
-      const page = await browser.newPage();
-      console.log('New page created');
-      
-      // Set viewport for consistent rendering
-      await page.setViewport({ width: 1200, height: 800 });
-      
-      console.log('Setting content...');
-      await page.setContent(html, { 
-        waitUntil: 'networkidle0',
-        timeout: 30000 
-      });
-      
-      console.log('Content set, generating PDF...');
-      const pdf = await page.pdf({
+      const options = {
         format: 'A4',
         margin: {
           top: '15mm',
@@ -1061,27 +1034,92 @@ export class ReportsService {
         },
         printBackground: true,
         preferCSSPageSize: false,
-      });
-
-      console.log('PDF generated successfully, size:', pdf.length, 'bytes');
+      };
       
-      if (pdf.length < 1000) {
-        console.error('PDF too small, likely empty or corrupted');
-        throw new Error('PDF-Generierung fehlgeschlagen: PDF zu klein');
+      const file = { content: html };
+      const pdfBuffer = await htmlPdf.generatePdf(file, options);
+      
+      console.log('html-pdf-node generated PDF successfully, size:', pdfBuffer.length, 'bytes');
+      
+      if (pdfBuffer.length < 1000) {
+        throw new Error('PDF zu klein, versuche Puppeteer...');
       }
       
-      return Buffer.from(pdf);
-    } catch (error) {
-      console.error('Error in generatePDF:', error);
-      console.error('Error stack:', error.stack);
-      throw new Error(`PDF-Generierung fehlgeschlagen: ${error.message}`);
-    } finally {
-      if (browser) {
-        console.log('Closing browser...');
-        try {
-          await browser.close();
-        } catch (closeError) {
-          console.error('Error closing browser:', closeError);
+      return pdfBuffer;
+    } catch (htmlPdfError) {
+      console.log('html-pdf-node failed, falling back to Puppeteer:', htmlPdfError.message);
+      
+      // Fallback to Puppeteer
+      let browser;
+      try {
+        console.log('Launching Puppeteer browser...');
+        
+        browser = await puppeteer.launch({
+          headless: true,
+          executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding'
+          ],
+        });
+
+        console.log('Puppeteer browser launched successfully');
+        const page = await browser.newPage();
+        console.log('New page created');
+        
+        // Set viewport for consistent rendering
+        await page.setViewport({ width: 1200, height: 800 });
+        
+        console.log('Setting content...');
+        await page.setContent(html, { 
+          waitUntil: 'networkidle0',
+          timeout: 30000 
+        });
+        
+        console.log('Content set, generating PDF...');
+        const pdf = await page.pdf({
+          format: 'A4',
+          margin: {
+            top: '15mm',
+            right: '15mm',
+            bottom: '15mm',
+            left: '15mm',
+          },
+          printBackground: true,
+          preferCSSPageSize: false,
+        });
+
+        console.log('Puppeteer PDF generated successfully, size:', pdf.length, 'bytes');
+        
+        if (pdf.length < 1000) {
+          console.error('Puppeteer PDF too small, likely empty or corrupted');
+          throw new Error('PDF-Generierung fehlgeschlagen: PDF zu klein');
+        }
+        
+        return Buffer.from(pdf);
+      } catch (puppeteerError) {
+        console.error('Both PDF methods failed!');
+        console.error('html-pdf-node error:', htmlPdfError.message);
+        console.error('Puppeteer error:', puppeteerError.message);
+        throw new Error(`PDF-Generierung fehlgeschlagen: ${puppeteerError.message}`);
+      } finally {
+        if (browser) {
+          console.log('Closing browser...');
+          try {
+            await browser.close();
+          } catch (closeError) {
+            console.error('Error closing browser:', closeError);
+          }
         }
       }
     }
