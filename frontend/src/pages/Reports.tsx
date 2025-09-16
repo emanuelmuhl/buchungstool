@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from 'react-query'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
+import { getApiUrl } from '../utils/api'
 import { 
   FileText, 
   Download, 
@@ -40,7 +41,7 @@ export default function Reports() {
 
       console.log('Downloading invoice for booking:', bookingId)
       
-      const response = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3101' : `http://${window.location.hostname}:3101`}/reports/invoice/${bookingId}`, {
+        const response = await fetch(`${getApiUrl()}/reports/invoice/${bookingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -88,7 +89,7 @@ export default function Reports() {
 
       console.log('Downloading period report:', { startDate, endDate, format })
       
-      const response = await fetch(`/api/reports/period?startDate=${startDate}&endDate=${endDate}&format=${format}`, {
+      const response = await fetch(`${getApiUrl()}/reports/period?startDate=${startDate}&endDate=${endDate}&format=${format}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

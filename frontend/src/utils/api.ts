@@ -5,7 +5,12 @@ export const getApiUrl = () => {
     return 'http://localhost:3101';
   }
   
-  // In der Produktion (Docker)
+  // Über Cloudflare (HTTPS Domain)
+  if (window.location.hostname.includes('casapacifico.org')) {
+    return `https://${window.location.hostname}`;
+  }
+  
+  // In der Produktion (Docker direkt)
   return `http://${window.location.hostname}:3101`;
 };
 

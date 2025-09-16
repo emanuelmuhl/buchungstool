@@ -22,6 +22,7 @@ import { bookingsApi, guestsApi, servicesApi } from '../api'
 import { formatPrice, formatName } from '../utils/formatters'
 import { calculateTotalPrice, createPriceBreakdown } from '../utils/bookingCalculation'
 import { formatPriceWithCurrency, convertCurrency, type Currency } from '../utils/currencyConverter'
+import { getApiUrl } from '../utils/api'
 
 interface Booking {
   id: string
@@ -209,7 +210,7 @@ export default function Bookings() {
       if (!token) return
 
       // Verwende die Reports-Seite für den Download
-      const response = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3101' : `http://${window.location.hostname}:3101`}/reports/invoice/${bookingId}`, {
+      const response = await fetch(`${getApiUrl()}/reports/invoice/${bookingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -242,7 +243,7 @@ export default function Bookings() {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3101' : `http://${window.location.hostname}:3101`}/reports/confirmation/${bookingId}`, {
+      const response = await fetch(`${getApiUrl()}/reports/confirmation/${bookingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
