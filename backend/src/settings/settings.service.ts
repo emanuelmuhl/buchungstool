@@ -65,13 +65,21 @@ export class SettingsService {
       // Speichere jede Einstellung einzeln in der Datenbank
       for (const [key, value] of Object.entries(settings)) {
         if (value !== undefined && value !== null) {
-          await this.settingsRepository.upsert(
-            {
+          // Suche nach existierender Einstellung
+          let setting = await this.settingsRepository.findOne({ where: { key } });
+          
+          if (setting) {
+            // Update existierende Einstellung
+            setting.value = String(value);
+            await this.settingsRepository.save(setting);
+          } else {
+            // Erstelle neue Einstellung
+            setting = this.settingsRepository.create({
               key,
               value: String(value),
-            },
-            ['key']
-          );
+            });
+            await this.settingsRepository.save(setting);
+          }
         }
       }
       
