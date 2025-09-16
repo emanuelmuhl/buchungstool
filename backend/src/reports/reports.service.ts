@@ -251,297 +251,233 @@ export class ReportsService {
           <meta charset="UTF-8">
           <title>Buchungsbestätigung - ${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-            
             body { 
-              font-family: 'Roboto', Arial, sans-serif; 
+              font-family: Arial, sans-serif; 
               margin: 0; 
-              padding: 40px;
-              background: linear-gradient(135deg, #e8f5e8 0%, #a8d8a8 100%);
-              color: #2c3e50;
-            }
-            
-            .confirmation-container {
-              max-width: 800px;
-              margin: 0 auto;
-              background: white;
-              border-radius: 15px;
-              box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-              overflow: hidden;
+              padding: 20mm;
+              color: #333;
+              line-height: 1.4;
             }
             
             .header {
-              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-              color: white;
-              padding: 40px;
               text-align: center;
-              position: relative;
-            }
-            
-            .header::before {
-              content: '🏔️';
-              position: absolute;
-              top: 20px;
-              left: 30px;
-              font-size: 30px;
-              opacity: 0.7;
-            }
-            
-            .header::after {
-              content: '🌲';
-              position: absolute;
-              top: 20px;
-              right: 30px;
-              font-size: 30px;
-              opacity: 0.7;
+              margin-bottom: 30px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #28a745;
             }
             
             .header h1 {
               margin: 0 0 10px 0;
-              font-size: 2.5em;
-              font-weight: 300;
-              text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+              font-size: 28px;
+              color: #2c3e50;
             }
             
             .header h2 {
-              margin: 0 0 20px 0;
-              font-size: 1.8em;
-              font-weight: 400;
-              opacity: 0.9;
+              margin: 0 0 15px 0;
+              font-size: 20px;
+              color: #28a745;
+              font-weight: normal;
             }
             
             .header p {
               margin: 0;
-              font-size: 1.1em;
-              opacity: 0.8;
-            }
-            
-            .content {
-              padding: 40px;
+              color: #666;
+              font-size: 14px;
             }
             
             .confirmation-badge {
-              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-              color: white;
-              padding: 20px;
-              border-radius: 50px;
+              background: #d4edda;
+              color: #155724;
+              padding: 15px;
               text-align: center;
-              margin-bottom: 30px;
-              font-size: 1.3em;
-              font-weight: 500;
-            }
-            
-            .confirmation-badge::before {
-              content: '✅';
-              margin-right: 10px;
-              font-size: 1.2em;
+              margin-bottom: 25px;
+              border-radius: 5px;
+              border: 1px solid #c3e6cb;
+              font-size: 16px;
+              font-weight: bold;
             }
             
             .booking-info {
-              background: #e8f5e8;
-              padding: 25px;
-              border-radius: 10px;
-              margin-bottom: 30px;
-              border-left: 5px solid #28a745;
+              background: #f8f9fa;
+              padding: 20px;
+              margin-bottom: 25px;
+              border-radius: 5px;
+              border-left: 4px solid #28a745;
             }
             
             .booking-info p {
-              margin: 8px 0;
-              font-size: 1.1em;
+              margin: 5px 0;
+              font-size: 14px;
             }
             
             .guest-info {
-              background: #f8f9fa;
-              padding: 25px;
-              border-radius: 10px;
-              margin-bottom: 30px;
-              border-left: 5px solid #667eea;
+              margin-bottom: 25px;
             }
             
             .guest-info h3 {
               margin: 0 0 15px 0;
-              color: #2d5016;
-              font-size: 1.3em;
-              display: flex;
-              align-items: center;
+              color: #2c3e50;
+              font-size: 16px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 5px;
             }
             
-            .guest-info h3::before {
-              content: '👤';
-              margin-right: 10px;
+            .guest-info p {
+              margin: 5px 0;
+              font-size: 14px;
+            }
+            
+            .welcome-section {
+              background: #e3f2fd;
+              padding: 20px;
+              margin: 25px 0;
+              border-radius: 5px;
+              border-left: 4px solid #2196f3;
+            }
+            
+            .welcome-section h3 {
+              margin: 0 0 10px 0;
+              color: #1976d2;
+              font-size: 16px;
+            }
+            
+            .welcome-section p {
+              margin: 0;
+              font-size: 14px;
+              color: #333;
             }
             
             .services-table {
               width: 100%;
               border-collapse: collapse;
-              margin: 30px 0;
-              border-radius: 10px;
-              overflow: hidden;
-              box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+              margin: 25px 0;
+              border: 1px solid #ddd;
             }
             
             .services-table th {
-              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-              color: white;
-              padding: 15px;
+              background: #f1f1f1;
+              padding: 12px 8px;
               text-align: left;
-              font-weight: 500;
-              font-size: 1.1em;
+              font-weight: bold;
+              font-size: 14px;
+              border-bottom: 2px solid #ddd;
             }
             
             .services-table td {
-              padding: 15px;
+              padding: 10px 8px;
               border-bottom: 1px solid #eee;
-              font-size: 1em;
+              font-size: 14px;
             }
             
             .services-table tr:nth-child(even) {
-              background-color: #f8f9fa;
-            }
-            
-            .services-table tr:hover {
-              background-color: #e8f5e8;
+              background-color: #f9f9f9;
             }
             
             .total-section {
-              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-              color: white;
-              padding: 25px;
-              border-radius: 10px;
               text-align: right;
-              margin: 30px 0;
+              margin: 25px 0;
+              padding: 15px;
+              background: #e8f5e9;
+              border-radius: 5px;
+              border-left: 4px solid #28a745;
             }
             
             .total-section p {
               margin: 0;
-              font-size: 1.5em;
-              font-weight: 500;
-            }
-            
-            .welcome-section {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              padding: 30px;
-              border-radius: 10px;
-              margin: 30px 0;
-              text-align: center;
-            }
-            
-            .welcome-section h3 {
-              margin: 0 0 15px 0;
-              font-size: 1.5em;
+              font-size: 18px;
+              font-weight: bold;
+              color: #2c3e50;
             }
             
             .footer {
-              background: #2c3e50;
-              color: white;
-              padding: 30px;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              font-size: 14px;
+              color: #666;
+            }
+            
+            .footer .welcome-text {
+              font-weight: bold;
+              margin-bottom: 15px;
+              color: #2c3e50;
               text-align: center;
-              position: relative;
-            }
-            
-            .footer::before {
-              content: '🏡';
-              position: absolute;
-              top: 20px;
-              left: 30px;
-              font-size: 25px;
-              opacity: 0.7;
-            }
-            
-            .footer::after {
-              content: '🌿';
-              position: absolute;
-              top: 20px;
-              right: 30px;
-              font-size: 25px;
-              opacity: 0.7;
-            }
-            
-            .footer p {
-              margin: 10px 0;
-              line-height: 1.6;
             }
             
             .checkin-info {
-              background: rgba(255,255,255,0.1);
-              padding: 20px;
-              border-radius: 8px;
-              margin-top: 20px;
+              background: #f8f9fa;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+            }
+            
+            .checkin-info p {
+              margin: 5px 0;
             }
             
             strong { color: #2c3e50; }
           </style>
         </head>
         <body>
-          <div class="confirmation-container">
-            <div class="header">
-              ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 200px; max-height: 100px; margin-bottom: 20px; border-radius: 8px;">` : ''}
-              <h1>${settings.companyName}</h1>
-              <h2>Buchungsbestätigung</h2>
-              <p>${settings.address}</p>
+          <div class="header">
+            ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 150px; max-height: 80px; margin-bottom: 15px;">` : ''}
+            <h1>${settings.companyName}</h1>
+            <h2>Buchungsbestätigung</h2>
+            <p>${settings.address}</p>
+          </div>
+
+          <div class="confirmation-badge">
+            ✓ Deine Buchung ist bestätigt!
+          </div>
+
+          <div class="booking-info">
+            <p><strong>Buchungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
+            <p><strong>Bestätigt am:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
+            <p><strong>Aufenthalt:</strong> ${checkIn} - ${checkOut} (${numberOfNights} Nächte)</p>
+          </div>
+
+          <div class="guest-info">
+            <h3>Liebe/r ${booking.primaryGuest.firstName}</h3>
+            <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
+            ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
+            ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
+            ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
+            ${booking.additionalGuests?.length ? `<p><strong>Begleitende Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
+          </div>
+
+          <div class="welcome-section">
+            <h3>Willkommen im Rustico Tessin!</h3>
+            <p>Wir freuen uns auf deinen Besuch! Unser gemütliches Rustico bietet dir die perfekte Auszeit in der schönen Natur des Tessins.</p>
+          </div>
+
+          <table class="services-table">
+            <thead>
+              <tr>
+                <th>Leistung</th>
+                <th>Beschreibung</th>
+                <th style="text-align: right;">Betrag</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${servicesHTML}
+            </tbody>
+          </table>
+
+          ${totalAmount > 0 ? `
+          <div class="total-section">
+            <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
+          </div>
+          ` : ''}
+
+          <div class="footer">
+            <p class="welcome-text">Wir freuen uns darauf, dich begrüßen zu dürfen!</p>
+            <div class="checkin-info">
+              <p><strong>Check-in:</strong> Ab 15:00 Uhr am ${checkIn}</p>
+              <p><strong>Check-out:</strong> Bis 11:00 Uhr am ${checkOut}</p>
+              <p><strong>Kontakt:</strong> ${settings.phone || 'Siehe Einstellungen'}</p>
+              <p><strong>E-Mail:</strong> ${settings.email || 'Siehe Einstellungen'}</p>
             </div>
-
-            <div class="content">
-              <div class="confirmation-badge">
-                Deine Buchung ist bestätigt!
-              </div>
-
-              <div class="booking-info">
-                <p><strong>Buchungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
-                <p><strong>Bestätigt am:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
-                <p><strong>Aufenthalt:</strong> ${checkIn} - ${checkOut} (${numberOfNights} Nächte)</p>
-              </div>
-
-              <div class="guest-info">
-                <h3>Liebe/r ${booking.primaryGuest.firstName}</h3>
-                <p>Wir freuen uns riesig auf deinen Besuch in unserem gemütlichen Rustico! 🏡</p>
-                <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
-                ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
-                ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
-                ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
-                ${booking.additionalGuests?.length ? `<p><strong>Begleitende Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
-              </div>
-
-              <div class="welcome-section">
-                <h3>🌲 Willkommen im Rustico Tessin! 🌲</h3>
-                <p>Erlebe unvergessliche Momente in der wunderschönen Natur des Tessins. Unser gemütliches Rustico bietet dir die perfekte Auszeit vom Alltag - umgeben von Bergen, Wäldern und der beruhigenden Stille der Natur.</p>
-              </div>
-
-              <table class="services-table">
-                <thead>
-                  <tr>
-                    <th>🏔️ Leistung</th>
-                    <th>📋 Beschreibung</th>
-                    <th>💰 Betrag</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${servicesHTML}
-                </tbody>
-              </table>
-
-              ${totalAmount > 0 ? `
-              <div class="total-section">
-                <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
-              </div>
-              ` : ''}
-            </div>
-
-            <div class="footer">
-              <p style="font-size: 1.2em; font-weight: 500; margin-bottom: 20px;">
-                Wir können es kaum erwarten, dich begrüßen zu dürfen! 🎉
-              </p>
-              <div class="checkin-info">
-                <p><strong>Check-in:</strong> Ab 15:00 Uhr am ${checkIn}</p>
-                <p><strong>Check-out:</strong> Bis 11:00 Uhr am ${checkOut}</p>
-                <p><strong>Kontakt:</strong> ${settings.phone || 'Siehe Einstellungen'}</p>
-                <p><strong>E-Mail:</strong> ${settings.email || 'Siehe Einstellungen'}</p>
-              </div>
-              <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
-                Genieße die Ruhe der Berge und lass die Seele baumeln! 🏔️✨
-              </p>
-            </div>
+            <p style="text-align: center; margin-top: 20px;">Wir wünschen dir eine schöne Zeit!</p>
           </div>
         </body>
         </html>
@@ -618,257 +554,186 @@ export class ReportsService {
         <meta charset="UTF-8">
         <title>Rechnung - ${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-          
           body { 
-            font-family: 'Roboto', Arial, sans-serif; 
+            font-family: Arial, sans-serif; 
             margin: 0; 
-            padding: 40px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #2c3e50;
-          }
-          
-          .invoice-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            padding: 20mm;
+            color: #333;
+            line-height: 1.4;
           }
           
           .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
             text-align: center;
-            position: relative;
-          }
-          
-          .header::before {
-            content: '🏔️';
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            font-size: 30px;
-            opacity: 0.7;
-          }
-          
-          .header::after {
-            content: '🌲';
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 30px;
-            opacity: 0.7;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
           }
           
           .header h1 {
             margin: 0 0 10px 0;
-            font-size: 2.5em;
-            font-weight: 300;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 28px;
+            color: #2c3e50;
           }
           
           .header h2 {
-            margin: 0 0 20px 0;
-            font-size: 1.8em;
-            font-weight: 400;
-            opacity: 0.9;
+            margin: 0 0 15px 0;
+            font-size: 20px;
+            color: #666;
+            font-weight: normal;
           }
           
           .header p {
             margin: 0;
-            font-size: 1.1em;
-            opacity: 0.8;
-          }
-          
-          .content {
-            padding: 40px;
+            color: #666;
+            font-size: 14px;
           }
           
           .invoice-info {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 5px;
           }
           
           .invoice-info p {
-            margin: 8px 0;
-            font-size: 1.1em;
+            margin: 5px 0;
+            font-size: 14px;
           }
           
           .guest-info {
-            background: #e8f5e8;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 5px solid #28a745;
+            margin-bottom: 25px;
           }
           
           .guest-info h3 {
             margin: 0 0 15px 0;
-            color: #2d5016;
-            font-size: 1.3em;
-            display: flex;
-            align-items: center;
+            color: #2c3e50;
+            font-size: 16px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
           }
           
-          .guest-info h3::before {
-            content: '👤';
-            margin-right: 10px;
+          .guest-info p {
+            margin: 5px 0;
+            font-size: 14px;
           }
           
           .services-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 30px 0;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin: 25px 0;
+            border: 1px solid #ddd;
           }
           
           .services-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
+            background: #f1f1f1;
+            padding: 12px 8px;
             text-align: left;
-            font-weight: 500;
-            font-size: 1.1em;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 2px solid #ddd;
           }
           
           .services-table td {
-            padding: 15px;
+            padding: 10px 8px;
             border-bottom: 1px solid #eee;
-            font-size: 1em;
+            font-size: 14px;
           }
           
           .services-table tr:nth-child(even) {
-            background-color: #f8f9fa;
-          }
-          
-          .services-table tr:hover {
-            background-color: #e3f2fd;
+            background-color: #f9f9f9;
           }
           
           .total-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
             text-align: right;
-            margin: 30px 0;
+            margin: 25px 0;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 5px;
           }
           
           .total-section p {
             margin: 0;
-            font-size: 1.5em;
-            font-weight: 500;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
           }
           
           .footer {
-            background: #2c3e50;
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-          }
-          
-          .footer::before {
-            content: '🏡';
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            font-size: 25px;
-            opacity: 0.7;
-          }
-          
-          .footer::after {
-            content: '🌿';
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 25px;
-            opacity: 0.7;
-          }
-          
-          .footer p {
-            margin: 10px 0;
-            line-height: 1.6;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
           }
           
           .footer .thank-you {
-            font-size: 1.2em;
-            font-weight: 500;
-            margin-bottom: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
           }
           
           .payment-info {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+          }
+          
+          .payment-info p {
+            margin: 5px 0;
           }
           
           strong { color: #2c3e50; }
         </style>
       </head>
       <body>
-        <div class="invoice-container">
-          <div class="header">
-            ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 200px; max-height: 100px; margin-bottom: 20px; border-radius: 8px;">` : ''}
-            <h1>${settings.companyName}</h1>
-            <h2>Rechnung</h2>
-            <p>${settings.address}</p>
+        <div class="header">
+          ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 150px; max-height: 80px; margin-bottom: 15px;">` : ''}
+          <h1>${settings.companyName}</h1>
+          <h2>Rechnung</h2>
+          <p>${settings.address}</p>
+        </div>
+
+        <div class="invoice-info">
+          <p><strong>Rechnungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
+          <p><strong>Datum:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
+          <p><strong>Aufenthalt:</strong> ${checkIn} - ${checkOut} (${numberOfNights} Nächte)</p>
+        </div>
+
+        <div class="guest-info">
+          <h3>Liebe/r ${booking.primaryGuest.firstName}</h3>
+          <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
+          ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
+          ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
+          ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
+          ${booking.additionalGuests?.length ? `<p><strong>Begleitende Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
+        </div>
+
+        <table class="services-table">
+          <thead>
+            <tr>
+              <th>Leistung</th>
+              <th>Beschreibung</th>
+              <th style="text-align: right;">Betrag</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${servicesHTML}
+          </tbody>
+        </table>
+
+        <div class="total-section">
+          <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
+        </div>
+
+        <div class="footer">
+          <p class="thank-you">Vielen Dank für deinen Aufenthalt!</p>
+          <div class="payment-info">
+            <p><strong>Zahlungsinformationen:</strong></p>
+            <p><strong>IBAN:</strong> ${settings.iban}</p>
+            <p><strong>Verwendungszweck:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
           </div>
-
-          <div class="content">
-            <div class="invoice-info">
-              <p><strong>Rechnungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
-              <p><strong>Datum:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
-              <p><strong>Aufenthalt:</strong> ${checkIn} - ${checkOut} (${numberOfNights} Nächte)</p>
-            </div>
-
-            <div class="guest-info">
-              <h3>Liebe/r ${booking.primaryGuest.firstName}</h3>
-              <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
-              ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
-              ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
-              ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
-              ${booking.additionalGuests?.length ? `<p><strong>Begleitende Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
-            </div>
-
-            <table class="services-table">
-              <thead>
-                <tr>
-                  <th>🏔️ Leistung</th>
-                  <th>📋 Beschreibung</th>
-                  <th>💰 Betrag</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${servicesHTML}
-              </tbody>
-            </table>
-
-            <div class="total-section">
-              <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
-            </div>
-          </div>
-
-          <div class="footer">
-            <p class="thank-you">Vielen Dank für deinen wundervollen Aufenthalt in unserem Rustico! 🌲</p>
-            <div class="payment-info">
-              <p>Bitte überweise den Betrag auf folgendes Konto:</p>
-              <p><strong>IBAN:</strong> ${settings.iban}</p>
-              <p><strong>Verwendungszweck:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
-            </div>
-            <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
-              Wir hoffen, du hattest eine erholsame Zeit in der Natur und kommst bald wieder! 🏡✨
-            </p>
-          </div>
+          <p>Wir hoffen, du hattest eine schöne Zeit und kommst bald wieder!</p>
         </div>
       </body>
       </html>

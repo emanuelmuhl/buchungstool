@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { FileUploadService } from './file-upload.service';
+import { Setting } from './entities/setting.entity';
 
 export interface AppSettings {
   companyName: string;
@@ -16,7 +19,11 @@ export interface AppSettings {
 
 @Injectable()
 export class SettingsService {
-  constructor(private fileUploadService: FileUploadService) {}
+  constructor(
+    @InjectRepository(Setting)
+    private settingsRepository: Repository<Setting>,
+    private fileUploadService: FileUploadService
+  ) {}
 
   private defaultSettings: AppSettings = {
     companyName: 'Rustico Tessin',
@@ -32,15 +39,48 @@ export class SettingsService {
   };
 
   async getSettings(): Promise<AppSettings> {
-    // In einer echten App würden diese aus der Datenbank geladen
-    // Für jetzt verwenden wir die Standardeinstellungen
-    return this.defaultSettings;
+    try {
+      // Lade alle Einstellungen aus der Datenbank
+      const settingsFromDb = await this.settingsRepository.find();
+      
+      // Konvertiere in AppSettings Format
+      const settings = { ...this.defaultSettings };
+      
+      for (const setting of settingsFromDb) {
+        if (setting.key in settings) {
+          (settings as any)[setting.key] = setting.value;
+        }
+      }
+      
+      return settings;
+    } catch (error) {
+      console.error('Error loading settings from database:', error);
+      // Fallback zu Standard-Einstellungen
+      return this.defaultSettings;
+    }
   }
 
   async updateSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
-    // In einer echten App würden diese in der Datenbank gespeichert
-    this.defaultSettings = { ...this.defaultSettings, ...settings };
-    return this.defaultSettings;
+    try {
+      // Speichere jede Einstellung einzeln in der Datenbank
+      for (const [key, value] of Object.entries(settings)) {
+        if (value !== undefined && value !== null) {
+          await this.settingsRepository.upsert(
+            {
+              key,
+              value: String(value),
+            },
+            ['key']
+          );
+        }
+      }
+      
+      // Lade und gebe die aktualisierten Einstellungen zurück
+      return await this.getSettings();
+    } catch (error) {
+      console.error('Error updating settings in database:', error);
+      throw new Error('Fehler beim Speichern der Einstellungen');
+    }
   }
 
   async getCompanyInfo() {
