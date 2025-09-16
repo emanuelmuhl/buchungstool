@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from 'react-query'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
-import { getApiUrl } from '../utils/api'
+import { getApiUrl, downloadPDF } from '../utils/api'
 import { 
   FileText, 
   Download, 
@@ -33,49 +33,13 @@ export default function Reports() {
 
   const downloadInvoice = async (bookingId: string) => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('Nicht angemeldet. Bitte melden Sie sich erneut an.')
-        return
-      }
-
-      console.log('Downloading invoice for booking:', bookingId)
-      
-        const response = await fetch(`${getApiUrl()}/reports/invoice/${bookingId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Response error:', errorText)
-        throw new Error(`Download fehlgeschlagen: ${response.status} ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
-      console.log('Blob size:', blob.size)
-      
-      if (blob.size === 0) {
-        throw new Error('Leere Datei erhalten')
-      }
-
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `rechnung-${bookingId.substring(0, 8)}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      
-      console.log('Download completed successfully')
+      await downloadPDF(
+        `/reports/invoice/${bookingId}`,
+        `rechnung-${bookingId.substring(0, 8)}.pdf`
+      );
     } catch (error) {
-      console.error('Download error:', error)
-      alert(`Download fehlgeschlagen: ${error.message}`)
+      console.error('Fehler beim Herunterladen der Rechnung:', error);
+      alert('Fehler beim Herunterladen der Rechnung');
     }
   }
 

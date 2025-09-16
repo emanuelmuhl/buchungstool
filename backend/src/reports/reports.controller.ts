@@ -20,6 +20,11 @@ export class ReportsController {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="buchungsbestaetigung-${bookingId.substring(0, 8)}.pdf"`,
         'Content-Length': pdfBuffer.length,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Content-Encoding': 'identity',
+        'Accept-Ranges': 'bytes',
       });
       
       res.send(pdfBuffer);
@@ -42,6 +47,11 @@ export class ReportsController {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="rechnung-${bookingId.substring(0, 8)}.pdf"`,
         'Content-Length': pdfBuffer.length,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Content-Encoding': 'identity',
+        'Accept-Ranges': 'bytes',
       });
       
       res.send(pdfBuffer);
@@ -86,6 +96,11 @@ export class ReportsController {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="test-report.pdf"',
         'Content-Length': pdfBuffer.length,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Content-Encoding': 'identity',
+        'Accept-Ranges': 'bytes',
       });
       
       res.send(pdfBuffer);
@@ -126,6 +141,11 @@ export class ReportsController {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Length': buffer.length,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Content-Encoding': 'identity',
+        'Accept-Ranges': 'bytes',
       });
       
       res.send(buffer);

@@ -22,7 +22,7 @@ import { bookingsApi, guestsApi, servicesApi } from '../api'
 import { formatPrice, formatName } from '../utils/formatters'
 import { calculateTotalPrice, createPriceBreakdown } from '../utils/bookingCalculation'
 import { formatPriceWithCurrency, convertCurrency, type Currency } from '../utils/currencyConverter'
-import { getApiUrl } from '../utils/api'
+import { getApiUrl, downloadPDF } from '../utils/api'
 
 interface Booking {
   id: string
@@ -206,67 +206,25 @@ export default function Bookings() {
 
   const downloadInvoice = async (bookingId: string) => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) return
-
-      // Verwende die Reports-Seite für den Download
-      const response = await fetch(`${getApiUrl()}/reports/invoice/${bookingId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        // Fallback: Öffne die Reports-Seite
-        window.open(`/reports?bookingId=${bookingId}`, '_blank')
-        return
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `rechnung-${bookingId.substring(0, 8)}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      await downloadPDF(
+        `/reports/invoice/${bookingId}`,
+        `rechnung-${bookingId.substring(0, 8)}.pdf`
+      );
     } catch (error) {
-      console.error('Download error:', error)
-      // Fallback: Öffne die Reports-Seite
-      window.open(`/reports?bookingId=${bookingId}`, '_blank')
+      console.error('Fehler beim Herunterladen der Rechnung:', error);
+      alert('Fehler beim Herunterladen der Rechnung');
     }
   }
 
   const downloadBookingConfirmation = async (bookingId: string) => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) return
-
-      const response = await fetch(`${getApiUrl()}/reports/confirmation/${bookingId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        console.error('Booking confirmation download failed:', response.status)
-        alert('Fehler beim Herunterladen der Buchungsbestätigung')
-        return
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `buchungsbestaetigung-${bookingId.substring(0, 8)}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      await downloadPDF(
+        `/reports/confirmation/${bookingId}`,
+        `buchungsbestaetigung-${bookingId.substring(0, 8)}.pdf`
+      );
     } catch (error) {
-      console.error('Booking confirmation download error:', error)
-      alert('Fehler beim Herunterladen der Buchungsbestätigung')
+      console.error('Fehler beim Herunterladen der Buchungsbestätigung:', error);
+      alert('Fehler beim Herunterladen der Buchungsbestätigung');
     }
   }
 
