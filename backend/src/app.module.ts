@@ -27,7 +27,7 @@ import { ReportsModule } from './reports/reports.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Auto-create tables
+      synchronize: false, // WICHTIG: Auf false setzen um Datenverlust zu vermeiden!
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
