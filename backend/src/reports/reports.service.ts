@@ -22,6 +22,48 @@ export class ReportsService {
     private settingsService: SettingsService,
   ) {}
 
+  async generateBookingConfirmationPDF(bookingId: string): Promise<Buffer> {
+    try {
+      console.log('Generating booking confirmation PDF for booking:', bookingId);
+      
+      const booking = await this.bookingsRepository.findOne({
+        where: { id: bookingId },
+        relations: ['primaryGuest', 'additionalGuests', 'services'],
+      });
+
+      if (!booking) {
+        throw new Error('Buchung nicht gefunden');
+      }
+
+      if (!booking.primaryGuest) {
+        console.error('Primary Guest not found for booking:', booking.id);
+        throw new Error('Primary Guest nicht gefunden');
+      }
+
+      if (!booking.checkIn || !booking.checkOut) {
+        console.error('Missing dates for booking:', booking.id);
+        throw new Error('Check-in oder Check-out Datum fehlt');
+      }
+
+      console.log('Booking found for confirmation:', { 
+        id: booking.id, 
+        primaryGuest: booking.primaryGuest?.firstName,
+        servicesCount: booking.services?.length || 0 
+      });
+
+      const html = await this.generateBookingConfirmationHTML(booking);
+      console.log('Confirmation HTML generated, creating PDF...');
+      
+      const pdf = await this.generatePDF(html);
+      console.log('Confirmation PDF generated successfully, size:', pdf.length);
+      
+      return pdf;
+    } catch (error) {
+      console.error('Error generating booking confirmation PDF:', error);
+      throw error;
+    }
+  }
+
   async generateInvoicePDF(bookingId: string): Promise<Buffer> {
     try {
       console.log('Generating invoice PDF for booking:', bookingId);
@@ -144,6 +186,372 @@ export class ReportsService {
     }
   }
 
+  private async generateBookingConfirmationHTML(booking: Booking): Promise<string> {
+    try {
+      console.log('Generating confirmation HTML for booking:', booking.id);
+      
+      // Einstellungen laden
+      const settings = await this.settingsService.getSettings();
+      
+      const checkIn = formatDate(new Date(booking.checkIn), 'dd.MM.yyyy', { locale: de });
+      const checkOut = formatDate(new Date(booking.checkOut), 'dd.MM.yyyy', { locale: de });
+      const numberOfNights = Math.ceil(
+        (new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      let servicesHTML = '';
+      let totalAmount = 0;
+
+      if (booking.services?.length) {
+        console.log('Processing services for confirmation:', booking.services.length);
+        for (const service of booking.services) {
+          let serviceAmount = 0;
+          let description = '';
+
+          const servicePrice = typeof service.price === 'string' ? parseFloat(service.price) : service.price;
+
+          switch (service.type) {
+            case 'nightly':
+              serviceAmount = servicePrice * numberOfNights;
+              description = `${service.name} (${numberOfNights} Nächte)`;
+              break;
+            case 'per_person':
+              const totalGuests = 1 + (booking.additionalGuests?.length || 0);
+              serviceAmount = servicePrice * totalGuests * numberOfNights;
+              description = `${service.name} (${totalGuests} Personen × ${numberOfNights} Nächte)`;
+              break;
+            case 'per_booking':
+              serviceAmount = servicePrice;
+              description = service.name;
+              break;
+            default:
+              serviceAmount = servicePrice;
+              description = service.name;
+              break;
+          }
+
+          totalAmount += serviceAmount;
+          servicesHTML += `
+            <tr>
+              <td>${service.name || 'Unbekannte Leistung'}</td>
+              <td>${description}</td>
+              <td style="text-align: right;">CHF ${serviceAmount.toFixed(2)}</td>
+            </tr>
+          `;
+        }
+      } else {
+        console.log('No services found for booking confirmation');
+        servicesHTML = '<tr><td colspan="3">Keine zusätzlichen Leistungen gebucht</td></tr>';
+      }
+
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Buchungsbestätigung - ${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+            
+            body { 
+              font-family: 'Roboto', Arial, sans-serif; 
+              margin: 0; 
+              padding: 40px;
+              background: linear-gradient(135deg, #e8f5e8 0%, #a8d8a8 100%);
+              color: #2c3e50;
+            }
+            
+            .confirmation-container {
+              max-width: 800px;
+              margin: 0 auto;
+              background: white;
+              border-radius: 15px;
+              box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+              overflow: hidden;
+            }
+            
+            .header {
+              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+              color: white;
+              padding: 40px;
+              text-align: center;
+              position: relative;
+            }
+            
+            .header::before {
+              content: '🏔️';
+              position: absolute;
+              top: 20px;
+              left: 30px;
+              font-size: 30px;
+              opacity: 0.7;
+            }
+            
+            .header::after {
+              content: '🌲';
+              position: absolute;
+              top: 20px;
+              right: 30px;
+              font-size: 30px;
+              opacity: 0.7;
+            }
+            
+            .header h1 {
+              margin: 0 0 10px 0;
+              font-size: 2.5em;
+              font-weight: 300;
+              text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            .header h2 {
+              margin: 0 0 20px 0;
+              font-size: 1.8em;
+              font-weight: 400;
+              opacity: 0.9;
+            }
+            
+            .header p {
+              margin: 0;
+              font-size: 1.1em;
+              opacity: 0.8;
+            }
+            
+            .content {
+              padding: 40px;
+            }
+            
+            .confirmation-badge {
+              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 50px;
+              text-align: center;
+              margin-bottom: 30px;
+              font-size: 1.3em;
+              font-weight: 500;
+            }
+            
+            .confirmation-badge::before {
+              content: '✅';
+              margin-right: 10px;
+              font-size: 1.2em;
+            }
+            
+            .booking-info {
+              background: #e8f5e8;
+              padding: 25px;
+              border-radius: 10px;
+              margin-bottom: 30px;
+              border-left: 5px solid #28a745;
+            }
+            
+            .booking-info p {
+              margin: 8px 0;
+              font-size: 1.1em;
+            }
+            
+            .guest-info {
+              background: #f8f9fa;
+              padding: 25px;
+              border-radius: 10px;
+              margin-bottom: 30px;
+              border-left: 5px solid #667eea;
+            }
+            
+            .guest-info h3 {
+              margin: 0 0 15px 0;
+              color: #2d5016;
+              font-size: 1.3em;
+              display: flex;
+              align-items: center;
+            }
+            
+            .guest-info h3::before {
+              content: '👤';
+              margin-right: 10px;
+            }
+            
+            .services-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 30px 0;
+              border-radius: 10px;
+              overflow: hidden;
+              box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            }
+            
+            .services-table th {
+              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+              color: white;
+              padding: 15px;
+              text-align: left;
+              font-weight: 500;
+              font-size: 1.1em;
+            }
+            
+            .services-table td {
+              padding: 15px;
+              border-bottom: 1px solid #eee;
+              font-size: 1em;
+            }
+            
+            .services-table tr:nth-child(even) {
+              background-color: #f8f9fa;
+            }
+            
+            .services-table tr:hover {
+              background-color: #e8f5e8;
+            }
+            
+            .total-section {
+              background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+              color: white;
+              padding: 25px;
+              border-radius: 10px;
+              text-align: right;
+              margin: 30px 0;
+            }
+            
+            .total-section p {
+              margin: 0;
+              font-size: 1.5em;
+              font-weight: 500;
+            }
+            
+            .welcome-section {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 30px;
+              border-radius: 10px;
+              margin: 30px 0;
+              text-align: center;
+            }
+            
+            .welcome-section h3 {
+              margin: 0 0 15px 0;
+              font-size: 1.5em;
+            }
+            
+            .footer {
+              background: #2c3e50;
+              color: white;
+              padding: 30px;
+              text-align: center;
+              position: relative;
+            }
+            
+            .footer::before {
+              content: '🏡';
+              position: absolute;
+              top: 20px;
+              left: 30px;
+              font-size: 25px;
+              opacity: 0.7;
+            }
+            
+            .footer::after {
+              content: '🌿';
+              position: absolute;
+              top: 20px;
+              right: 30px;
+              font-size: 25px;
+              opacity: 0.7;
+            }
+            
+            .footer p {
+              margin: 10px 0;
+              line-height: 1.6;
+            }
+            
+            .checkin-info {
+              background: rgba(255,255,255,0.1);
+              padding: 20px;
+              border-radius: 8px;
+              margin-top: 20px;
+            }
+            
+            strong { color: #2c3e50; }
+          </style>
+        </head>
+        <body>
+          <div class="confirmation-container">
+            <div class="header">
+              ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 200px; max-height: 100px; margin-bottom: 20px; border-radius: 8px;">` : ''}
+              <h1>${settings.companyName}</h1>
+              <h2>Buchungsbestätigung</h2>
+              <p>${settings.address}</p>
+            </div>
+
+            <div class="content">
+              <div class="confirmation-badge">
+                Deine Buchung ist bestätigt!
+              </div>
+
+              <div class="booking-info">
+                <p><strong>Buchungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
+                <p><strong>Bestätigt am:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
+                <p><strong>Aufenthalt:</strong> ${checkIn} - ${checkOut} (${numberOfNights} Nächte)</p>
+              </div>
+
+              <div class="guest-info">
+                <h3>Liebe/r ${booking.primaryGuest.firstName}</h3>
+                <p>Wir freuen uns riesig auf deinen Besuch in unserem gemütlichen Rustico! 🏡</p>
+                <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
+                ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
+                ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
+                ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
+                ${booking.additionalGuests?.length ? `<p><strong>Begleitende Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
+              </div>
+
+              <div class="welcome-section">
+                <h3>🌲 Willkommen im Rustico Tessin! 🌲</h3>
+                <p>Erlebe unvergessliche Momente in der wunderschönen Natur des Tessins. Unser gemütliches Rustico bietet dir die perfekte Auszeit vom Alltag - umgeben von Bergen, Wäldern und der beruhigenden Stille der Natur.</p>
+              </div>
+
+              <table class="services-table">
+                <thead>
+                  <tr>
+                    <th>🏔️ Leistung</th>
+                    <th>📋 Beschreibung</th>
+                    <th>💰 Betrag</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${servicesHTML}
+                </tbody>
+              </table>
+
+              ${totalAmount > 0 ? `
+              <div class="total-section">
+                <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
+              </div>
+              ` : ''}
+            </div>
+
+            <div class="footer">
+              <p style="font-size: 1.2em; font-weight: 500; margin-bottom: 20px;">
+                Wir können es kaum erwarten, dich begrüßen zu dürfen! 🎉
+              </p>
+              <div class="checkin-info">
+                <p><strong>Check-in:</strong> Ab 15:00 Uhr am ${checkIn}</p>
+                <p><strong>Check-out:</strong> Bis 11:00 Uhr am ${checkOut}</p>
+                <p><strong>Kontakt:</strong> ${settings.phone || 'Siehe Einstellungen'}</p>
+                <p><strong>E-Mail:</strong> ${settings.email || 'Siehe Einstellungen'}</p>
+              </div>
+              <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+                Genieße die Ruhe der Berge und lass die Seele baumeln! 🏔️✨
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    } catch (error) {
+      console.error('Error generating confirmation HTML:', error);
+      throw new Error(`Bestätigungs-HTML-Generierung fehlgeschlagen: ${error.message}`);
+    }
+  }
+
   private async generateInvoiceHTML(booking: Booking): Promise<string> {
     try {
       console.log('Generating HTML for booking:', booking.id);
@@ -210,62 +618,257 @@ export class ReportsService {
         <meta charset="UTF-8">
         <title>Rechnung - ${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 40px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .invoice-info { margin-bottom: 30px; }
-          .guest-info { margin-bottom: 30px; }
-          .services-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-          .services-table th, .services-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          .services-table th { background-color: #f2f2f2; }
-          .total { font-weight: bold; font-size: 18px; text-align: right; }
-          .footer { margin-top: 50px; font-size: 12px; color: #666; }
+          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+          
+          body { 
+            font-family: 'Roboto', Arial, sans-serif; 
+            margin: 0; 
+            padding: 40px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50;
+          }
+          
+          .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+          }
+          
+          .header::before {
+            content: '🏔️';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 30px;
+            opacity: 0.7;
+          }
+          
+          .header::after {
+            content: '🌲';
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            opacity: 0.7;
+          }
+          
+          .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+          }
+          
+          .header h2 {
+            margin: 0 0 20px 0;
+            font-size: 1.8em;
+            font-weight: 400;
+            opacity: 0.9;
+          }
+          
+          .header p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.8;
+          }
+          
+          .content {
+            padding: 40px;
+          }
+          
+          .invoice-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+          }
+          
+          .invoice-info p {
+            margin: 8px 0;
+            font-size: 1.1em;
+          }
+          
+          .guest-info {
+            background: #e8f5e8;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #28a745;
+          }
+          
+          .guest-info h3 {
+            margin: 0 0 15px 0;
+            color: #2d5016;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+          }
+          
+          .guest-info h3::before {
+            content: '👤';
+            margin-right: 10px;
+          }
+          
+          .services-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+          }
+          
+          .services-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 1.1em;
+          }
+          
+          .services-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 1em;
+          }
+          
+          .services-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+          }
+          
+          .services-table tr:hover {
+            background-color: #e3f2fd;
+          }
+          
+          .total-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: right;
+            margin: 30px 0;
+          }
+          
+          .total-section p {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 500;
+          }
+          
+          .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+          }
+          
+          .footer::before {
+            content: '🏡';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 25px;
+            opacity: 0.7;
+          }
+          
+          .footer::after {
+            content: '🌿';
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 25px;
+            opacity: 0.7;
+          }
+          
+          .footer p {
+            margin: 10px 0;
+            line-height: 1.6;
+          }
+          
+          .footer .thank-you {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 20px;
+          }
+          
+          .payment-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+          }
+          
+          strong { color: #2c3e50; }
         </style>
       </head>
       <body>
-        <div class="header">
-          ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 200px; max-height: 100px; margin-bottom: 20px;">` : ''}
-          <h1>${settings.companyName}</h1>
-          <h2>Rechnung</h2>
-          <p>${settings.address}</p>
-        </div>
+        <div class="invoice-container">
+          <div class="header">
+            ${settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" style="max-width: 200px; max-height: 100px; margin-bottom: 20px; border-radius: 8px;">` : ''}
+            <h1>${settings.companyName}</h1>
+            <h2>Rechnung</h2>
+            <p>${settings.address}</p>
+          </div>
 
-        <div class="invoice-info">
-          <p><strong>Rechnungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
-          <p><strong>Datum:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
-          <p><strong>Zeitraum:</strong> ${checkIn} - ${checkOut}</p>
-        </div>
+          <div class="content">
+            <div class="invoice-info">
+              <p><strong>Rechnungsnummer:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
+              <p><strong>Datum:</strong> ${formatDate(new Date(), 'dd.MM.yyyy', { locale: de })}</p>
+              <p><strong>Aufenthalt:</strong> ${checkIn} - ${checkOut} (${numberOfNights} Nächte)</p>
+            </div>
 
-        <div class="guest-info">
-          <h3>Gast</h3>
-          <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
-          ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
-          ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
-          ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
-          ${booking.additionalGuests?.length ? `<p><strong>Zusätzliche Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
-        </div>
+            <div class="guest-info">
+              <h3>Liebe/r ${booking.primaryGuest.firstName}</h3>
+              <p><strong>${booking.primaryGuest.firstName} ${booking.primaryGuest.lastName}</strong></p>
+              ${booking.primaryGuest.address ? `<p>${booking.primaryGuest.address}</p>` : ''}
+              ${booking.primaryGuest.city ? `<p>${booking.primaryGuest.postalCode} ${booking.primaryGuest.city}</p>` : ''}
+              ${booking.primaryGuest.country ? `<p>${booking.primaryGuest.country}</p>` : ''}
+              ${booking.additionalGuests?.length ? `<p><strong>Begleitende Gäste:</strong> ${booking.additionalGuests.map(g => `${g.firstName} ${g.lastName}`).join(', ')}</p>` : ''}
+            </div>
 
-        <table class="services-table">
-          <thead>
-            <tr>
-              <th>Leistung</th>
-              <th>Beschreibung</th>
-              <th>Betrag</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${servicesHTML}
-          </tbody>
-        </table>
+            <table class="services-table">
+              <thead>
+                <tr>
+                  <th>🏔️ Leistung</th>
+                  <th>📋 Beschreibung</th>
+                  <th>💰 Betrag</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${servicesHTML}
+              </tbody>
+            </table>
 
-        <div class="total">
-          <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
-        </div>
+            <div class="total-section">
+              <p>Gesamtbetrag: CHF ${totalAmount.toFixed(2)}</p>
+            </div>
+          </div>
 
-        <div class="footer">
-          <p>Vielen Dank für Ihren Aufenthalt!</p>
-          <p>Bitte überweisen Sie den Betrag auf folgendes Konto:</p>
-          <p>IBAN: ${settings.iban}</p>
-          <p>Verwendungszweck: ${booking.id.substring(0, 8).toUpperCase()}</p>
+          <div class="footer">
+            <p class="thank-you">Vielen Dank für deinen wundervollen Aufenthalt in unserem Rustico! 🌲</p>
+            <div class="payment-info">
+              <p>Bitte überweise den Betrag auf folgendes Konto:</p>
+              <p><strong>IBAN:</strong> ${settings.iban}</p>
+              <p><strong>Verwendungszweck:</strong> ${booking.id.substring(0, 8).toUpperCase()}</p>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+              Wir hoffen, du hattest eine erholsame Zeit in der Natur und kommst bald wieder! 🏡✨
+            </p>
+          </div>
         </div>
       </body>
       </html>

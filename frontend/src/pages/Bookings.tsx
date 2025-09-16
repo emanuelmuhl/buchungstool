@@ -237,6 +237,38 @@ export default function Bookings() {
     }
   }
 
+  const downloadBookingConfirmation = async (bookingId: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3101' : `http://${window.location.hostname}:3101`}/reports/confirmation/${bookingId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        console.error('Booking confirmation download failed:', response.status)
+        alert('Fehler beim Herunterladen der Buchungsbestätigung')
+        return
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `buchungsbestaetigung-${bookingId.substring(0, 8)}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Booking confirmation download error:', error)
+      alert('Fehler beim Herunterladen der Buchungsbestätigung')
+    }
+  }
+
   const getStatusConfig = (status: string) => {
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
   }
@@ -659,6 +691,13 @@ export default function Bookings() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => downloadBookingConfirmation(booking.id)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Buchungsbestätigung herunterladen"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
                           <button
                             onClick={() => downloadInvoice(booking.id)}
                             className="text-blue-600 hover:text-blue-900"

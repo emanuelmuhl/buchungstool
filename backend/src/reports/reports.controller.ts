@@ -7,6 +7,28 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
+  @Get('confirmation/:bookingId')
+  @UseGuards(JwtAuthGuard)
+  async generateBookingConfirmationPDF(@Param('bookingId') bookingId: string, @Res() res: Response) {
+    try {
+      console.log('Booking confirmation PDF request for booking:', bookingId);
+      
+      const pdfBuffer = await this.reportsService.generateBookingConfirmationPDF(bookingId);
+      console.log('Booking confirmation PDF generated successfully, size:', pdfBuffer.length);
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="buchungsbestaetigung-${bookingId.substring(0, 8)}.pdf"`,
+        'Content-Length': pdfBuffer.length,
+      });
+      
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Error in booking confirmation controller:', error);
+      res.status(404).json({ message: error.message });
+    }
+  }
+
   @Get('invoice/:bookingId')
   @UseGuards(JwtAuthGuard)
   async generateInvoicePDF(@Param('bookingId') bookingId: string, @Res() res: Response) {
