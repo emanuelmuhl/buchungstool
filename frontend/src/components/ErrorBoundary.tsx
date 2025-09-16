@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Es gab ein unerwartetes Problem. Bitte versuchen Sie es erneut.
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.MODE === 'development' && this.state.error && (
               <details className="mb-4 p-3 bg-gray-100 rounded text-sm">
                 <summary className="cursor-pointer font-medium">Fehlerdetails (Entwicklung)</summary>
                 <pre className="mt-2 text-red-600 overflow-auto">

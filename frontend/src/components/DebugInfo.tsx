@@ -4,7 +4,7 @@ export default function DebugInfo() {
   const { user, isAuthenticated } = useAuth()
   const token = localStorage.getItem('token')
 
-  if (process.env.NODE_ENV !== 'development') {
+  if (import.meta.env.MODE !== 'development') {
     return null
   }
 
