@@ -53,7 +53,13 @@ export default function Reports() {
 
       console.log('Downloading period report:', { startDate, endDate, format })
       
-      const response = await fetch(`${getApiUrl()}/reports/period?startDate=${startDate}&endDate=${endDate}&format=${format}`, {
+      // Für Cloudflare müssen wir /api prefix hinzufügen
+      let endpoint = `/reports/period?startDate=${startDate}&endDate=${endDate}&format=${format}`;
+      if (window.location.hostname.includes('casapacifico.org')) {
+        endpoint = `/api${endpoint}`;
+      }
+      
+      const response = await fetch(`${getApiUrl()}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

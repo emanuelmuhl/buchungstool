@@ -44,7 +44,17 @@ export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
 export const downloadPDF = async (endpoint: string, filename: string) => {
   try {
     const token = localStorage.getItem('token');
-    const url = `${getApiUrl()}${endpoint}`;
+    
+    // Für Cloudflare müssen wir /api prefix hinzufügen
+    let finalEndpoint = endpoint;
+    if (window.location.hostname.includes('casapacifico.org')) {
+      // Wenn der Endpoint nicht schon mit /api beginnt, füge es hinzu
+      if (!endpoint.startsWith('/api/')) {
+        finalEndpoint = `/api${endpoint}`;
+      }
+    }
+    
+    const url = `${getApiUrl()}${finalEndpoint}`;
     
     console.log(`PDF Download: ${url}`);
     
