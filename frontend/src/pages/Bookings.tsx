@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
@@ -68,6 +68,7 @@ export default function Bookings() {
   const [guestSearchTerm, setGuestSearchTerm] = useState('')
   const [showGuestDropdown, setShowGuestDropdown] = useState(false)
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>('CHF')
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(null)
   
   const queryClient = useQueryClient()
 
@@ -150,6 +151,23 @@ export default function Bookings() {
     },
   })
 
+  // Quick status update mutation
+  const statusUpdateMutation = useMutation(
+    (data: { id: string; status: string }) => 
+      bookingsApi.update(data.id, { status: data.status }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('bookings')
+        setStatusDropdownOpen(null)
+      },
+      onError: (error: any) => {
+        console.error('Fehler beim Aktualisieren des Status:', error)
+        const errorMessage = error.response?.data?.message || error.message || 'Unbekannter Fehler'
+        alert(`Fehler beim Aktualisieren des Status: ${errorMessage}`)
+      }
+    }
+  )
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
@@ -227,6 +245,26 @@ export default function Bookings() {
       alert('Fehler beim Herunterladen der Buchungsbestätigung');
     }
   }
+
+  const handleStatusChange = (bookingId: string, newStatus: string) => {
+    statusUpdateMutation.mutate({ id: bookingId, status: newStatus })
+  }
+
+  const toggleStatusDropdown = (bookingId: string) => {
+    setStatusDropdownOpen(statusDropdownOpen === bookingId ? null : bookingId)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (statusDropdownOpen && !(event.target as Element).closest('.status-dropdown')) {
+        setStatusDropdownOpen(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [statusDropdownOpen])
 
   const getStatusConfig = (status: string) => {
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
@@ -623,10 +661,36 @@ export default function Bookings() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${status.color}`}>
-                          <StatusIcon className="h-3 w-3 mr-1" />
-                          {status.label}
-                        </span>
+                        <div className="relative status-dropdown">
+                          <button
+                            onClick={() => toggleStatusDropdown(booking.id)}
+                            className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full hover:opacity-80 transition-opacity ${status.color}`}
+                          >
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {status.label}
+                            <ChevronDown className="h-3 w-3 ml-1" />
+                          </button>
+                          
+                          {statusDropdownOpen === booking.id && (
+                            <div className="absolute top-full left-0 mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                              {Object.entries(statusConfig).map(([statusKey, config]) => {
+                                const OptionIcon = config.icon
+                                return (
+                                  <button
+                                    key={statusKey}
+                                    onClick={() => handleStatusChange(booking.id, statusKey)}
+                                    className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 flex items-center ${
+                                      booking.status === statusKey ? 'bg-gray-100' : ''
+                                    }`}
+                                  >
+                                    <OptionIcon className="h-3 w-3 mr-2" />
+                                    {config.label}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
