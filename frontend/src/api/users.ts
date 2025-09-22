@@ -1,59 +1,56 @@
-import axios from 'axios';
+import { apiCall } from '../utils/api';
 import { User, CreateUserDto, UpdateUserDto } from '../types/user';
-import { getApiUrl } from '../utils/api';
-
-const api = axios.create({
-  baseURL: getApiUrl(),
-});
-
-// Request interceptor für JWT Token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export const usersApi = {
   // Alle Benutzer abrufen (nur Admin)
   getAll: async (): Promise<User[]> => {
-    const response = await api.get('/users');
-    return response.data;
+    const response = await apiCall('/users');
+    return response.json();
   },
 
   // Eigenes Profil abrufen
   getProfile: async (): Promise<User> => {
-    const response = await api.get('/users/profile');
-    return response.data;
+    const response = await apiCall('/users/profile');
+    return response.json();
   },
 
   // Benutzer nach ID abrufen (nur Admin)
   getById: async (id: string): Promise<User> => {
-    const response = await api.get(`/users/${id}`);
-    return response.data;
+    const response = await apiCall(`/users/${id}`);
+    return response.json();
   },
 
   // Neuen Benutzer erstellen (nur Admin)
   create: async (userData: CreateUserDto): Promise<User> => {
-    const response = await api.post('/users', userData);
-    return response.data;
+    const response = await apiCall('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+    return response.json();
   },
 
   // Benutzer aktualisieren (nur Admin)
   update: async (id: string, userData: UpdateUserDto): Promise<User> => {
-    const response = await api.patch(`/users/${id}`, userData);
-    return response.data;
+    const response = await apiCall(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(userData),
+    });
+    return response.json();
   },
 
   // Eigenes Profil aktualisieren
   updateProfile: async (userData: UpdateUserDto): Promise<User> => {
-    const response = await api.patch('/users/profile/update', userData);
-    return response.data;
+    const response = await apiCall('/users/profile/update', {
+      method: 'PATCH',
+      body: JSON.stringify(userData),
+    });
+    return response.json();
   },
 
   // Benutzer löschen (nur Admin)
   delete: async (id: string): Promise<void> => {
-    await api.delete(`/users/${id}`);
+    await apiCall(`/users/${id}`, {
+      method: 'DELETE',
+    });
   },
 };

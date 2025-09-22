@@ -17,7 +17,17 @@ export const getApiUrl = () => {
 // Hilfsfunktion für API-Aufrufe mit Token
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem('token');
-  const url = `${getApiUrl()}${endpoint}`;
+  
+  // Für Cloudflare müssen wir /api prefix hinzufügen
+  let finalEndpoint = endpoint;
+  if (window.location.hostname.includes('casapacifico.org')) {
+    // Wenn der Endpoint nicht schon mit /api beginnt, füge es hinzu
+    if (!endpoint.startsWith('/api/')) {
+      finalEndpoint = `/api${endpoint}`;
+    }
+  }
+  
+  const url = `${getApiUrl()}${finalEndpoint}`;
   
   const defaultOptions: RequestInit = {
     headers: {
@@ -34,6 +44,8 @@ export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   
   if (!response.ok) {
     console.error(`API Error: ${response.status} ${response.statusText}`);
+    const errorText = await response.text();
+    console.error('Response body:', errorText);
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
   
